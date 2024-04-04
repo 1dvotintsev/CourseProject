@@ -40,6 +40,18 @@ namespace API.Business.Recomendations
         public Place[] GetTenRecomendations(User user)
         {
             //смотрим количество лайкнутых, если больше 9, то выбираем случайные 9 и у них ищем ближайшего неоцененного соседа один берем случайным образом
+            if(user.likes.Count >= 9)
+            {
+                for(int i = 0; i<9; i++)
+                {
+                    int random = new Random().Next(0, user.likes.Count);
+                    //LinkedListNode<Place> currentNode = (Place)user.likes.First;
+                    //for (int i = 0; i < randomIndex; i++)
+                    //{
+                    //    currentNode = currentNode.Next;
+                    //}
+                }
+            }
             //если лакнутых меньше то берем ближайших соседей у этих лайкнутых остальные места случайным образом выбираем
             //
             
@@ -81,8 +93,28 @@ namespace API.Business.Recomendations
             return matrixOfDistance;
         }
 
-        //надо написать функцию сортировки этой матрицы по близости
-
+        //функцию сортировки этой матрицы по близости
+        static double[,] SortMatrixBySecondColumn(double[,] matrix)
+        {
+            // Сортировка матрицы по второму столбцу
+            for (int i = 0; i < matrix.GetLength(0) - 1; i++)
+            {
+                for (int j = i + 1; j < matrix.GetLength(0); j++)
+                {
+                    if (matrix[i, 1] > matrix[j, 1])
+                    {
+                        // Обмен значений элементов
+                        double tempId = matrix[i, 0];
+                        double tempValue = matrix[i, 1];
+                        matrix[i, 0] = matrix[j, 0];
+                        matrix[i, 1] = matrix[j, 1];
+                        matrix[j, 0] = tempId;
+                        matrix[j, 1] = tempValue;
+                    }
+                }
+            }
+            return matrix;
+        }
 
         //добавления столбца с оценками отдельного пользователя в матрицу
         public int[,] AddColumnToArray(int[,] originalArray, int[] newColumn)
