@@ -14,13 +14,13 @@ namespace API.Business.Recomendations
 
         public Recomendations(User user) 
         {
-            matrix = new int[Place.list.Count, 0];
+            matrix = new int[Place.allPlaces.Count, 0];
 
             foreach(var i in User.users)
             {
                 if (i.reactions.Count > 50)
                 {
-                    int[] newColumn = new int[Place.list.Count];
+                    int[] newColumn = new int[Place.allPlaces.Count];
 
                     foreach(var place in i.likes)
                     {
@@ -39,27 +39,100 @@ namespace API.Business.Recomendations
 
         public Place[] GetTenRecomendations(User user)
         {
+            Recomendations recomendations = new Recomendations(user);
+            List<Place> places = new List<Place>();
+            
             //смотрим количество лайкнутых, если больше 9, то выбираем случайные 9 и у них ищем ближайшего неоцененного соседа один берем случайным образом
             if(user.likes.Count >= 9)
             {
+                //перебираем 9 лайкнутых
                 for(int i = 0; i<9; i++)
                 {
                     int random = new Random().Next(0, user.likes.Count);
-                    //LinkedListNode<Place> currentNode = (Place)user.likes.First;
-                    //for (int i = 0; i < randomIndex; i++)
-                    //{
-                    //    currentNode = currentNode.Next;
-                    //}
+
+                    double[,] matxOrRecomendations = recomendations.GetCos(matrix, Place.allPlaces[user.likes[i]]);
+
+                    //находим самое близкое к лайкнутому из непросмотренных
+                    Place placeForUser = GetOneRecomendation(user, Place.allPlaces[user.likes[i]], matxOrRecomendations);
+                    try
+                    {
+                        places.Add(placeForUser);
+                    }
+                    catch(Exception ex) { }
+                }
+                try
+                {
+                    //добавлем в набор одно случайное из непросмотренных
+                    places.Add(GetOneNew(Place.allPlaces, user.reactions));
+                }
+                catch(Exception ex) { }
+
+                return places.ToArray();
+            }
+            else   //если лакнутых меньше то берем ближайших соседей у этих лайкнутых остальные места случайным образом выбираем
+            {
+                foreach(int place in user.likes)
+                {
+                    double[,] matxOrRecomendations = recomendations.GetCos(matrix, Place.allPlaces[place]);
+
+                    Place placeForUser = GetOneRecomendation(user, Place.allPlaces[place], matxOrRecomendations);
+                    try
+                    {
+                        places.Add(placeForUser);
+                    }
+                    catch (Exception ex) { }
+                }
+
+                //добираем набор непросмотренными 
+                for(int i = 0; i < 10-places.Count; i++)
+                {
+                    try
+                    {
+                        places.Add(GetOneNew(Place.allPlaces, user.reactions));
+                    }
+                    catch (Exception ex) { }
+                }
+                return places.ToArray();
+            }
+        }
+
+        //дает одну рекомендацию пользователю к конкретному месту
+        public static Place GetOneRecomendation(User user, Place currentPlace, double[,] matrix)
+        {
+            for(int i = 0; i< matrix.GetLength(0); i++)
+            {
+                if (!user.reactions.Contains((int)matrix[i, 0]))
+                {
+                    return Place.allPlaces[(int)matrix[i, 0]];
                 }
             }
-            //если лакнутых меньше то берем ближайших соседей у этих лайкнутых остальные места случайным образом выбираем
-            //
-            
+            return null;
+        }
+
+        //дает одно ранее непросмотренное случайно
+        public static Place GetOneNew(List<Place> places, List<int> reactions)
+        {
+            Random random = new Random();
+            List<int> unreacted = new List<int>();
+            foreach(Place place in places)
+            {
+                if (!reactions.Contains(int.Parse(place.Id)))
+                    unreacted.Add(int.Parse(place.Id));
+            }
+
+            if (unreacted.Count > 0)
+            {
+                return Place.allPlaces[unreacted[random.Next(0, unreacted.Count)]];
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public double[,] GetCos(int[,] matrix, Place place)
         {
-            double[,] matrixOfDistance = new double[Place.list.Count - 1, 2];
+            double[,] matrixOfDistance = new double[Place.allPlaces.Count - 1, 2];
 
             for (int i = 0; i <int.Parse(place.Id); i++)
             {

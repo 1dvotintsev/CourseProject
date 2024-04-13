@@ -43,7 +43,7 @@
         protected Image image;
         protected string description;
         
-        public static LinkedList<Place> list = new LinkedList<Place>();
+        public static List<Place> allPlaces = new List<Place>();
         
 
         public string Id
@@ -106,7 +106,7 @@
             Description = description;
             //Img = image.ToString();
 
-            list.AddLast(this);
+            allPlaces.Add(this);
         }
     }
 }

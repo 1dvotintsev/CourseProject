@@ -44,9 +44,9 @@ namespace API.Business.Users
 
         public static LinkedList<User> users = new LinkedList<User>();
 
-        public LinkedList<int> likes;      //хранение айдишников у лайкнутых
-        public LinkedList<int> dislikes;   //хранение айдишников у дизлайкнутых
-        public LinkedList<int> reactions;  //хранение айдишников у всех просмотренных
+        public List<int> likes;      //хранение айдишников у лайкнутых
+        public List<int> dislikes;   //хранение айдишников у дизлайкнутых
+        public List<int> reactions;  //хранение айдишников у всех просмотренных
         
         private static readonly Dictionary<string, string> _registeredUsers = new Dictionary<string, string>();
 
@@ -143,19 +143,19 @@ namespace API.Business.Users
 
         public void Like(int id)
         {
-            likes.AddLast(id);
-            reactions.AddLast(id);
+            likes.Add(id);
+            reactions.Add(id);
         }
 
         public void Dislike(int id) 
         {
-            dislikes.AddLast(id);
-            reactions.AddLast(id);
+            dislikes.Add(id);
+            reactions.Add(id);
         }
 
         public void Skip(int id)
         {
-            reactions.AddLast(id);
+            reactions.Add(id);
         }
 
         public void SetName(string name)
