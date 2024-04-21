@@ -36,21 +36,22 @@ namespace API.Business.Users
 
     public class User
     {
-        protected Image photo;
+        protected string photo;
         protected string name;
         protected string login;
         protected string password;
         protected UserId id;
 
         public static LinkedList<User> users = new LinkedList<User>();
+        public static Dictionary<int, User> _users= new Dictionary<int, User>();
 
         public List<int> likes;      //хранение айдишников у лайкнутых
         public List<int> dislikes;   //хранение айдишников у дизлайкнутых
         public List<int> reactions;  //хранение айдишников у всех просмотренных
         
-        private static readonly Dictionary<string, string> _registeredUsers = new Dictionary<string, string>();
+        public static readonly Dictionary<string, string> _registeredUsers = new Dictionary<string, string>();
 
-        public static bool Register(string login, string password)
+        public bool Register(string login, string password)
         {
             if (!_registeredUsers.ContainsKey(login))
             {
@@ -60,7 +61,7 @@ namespace API.Business.Users
             return false; // Пользователь с таким именем уже существует
         }
 
-        public static bool LogIn(string login, string password)
+        public bool LogIn(string login, string password)
         {
             if (_registeredUsers.ContainsKey(login))
             {
@@ -69,6 +70,11 @@ namespace API.Business.Users
             return false; // Пользователь с таким именем не найден
         }
         
+        public void Delete()
+        {
+            _registeredUsers.Remove(login);
+        }
+
         public string Name
         {
             get
@@ -82,6 +88,22 @@ namespace API.Business.Users
                     throw new ArgumentException("Имя не заполнено");
                 }
                 name = value;
+            }
+        }
+
+        public string Photo
+        {
+            get
+            {
+                return photo;
+            }
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))  // возвращает true, если строка состоит только из пробелов или null
+                {
+                    throw new ArgumentException("Фото нет");
+                }
+                photo = value;
             }
         }
 
@@ -132,13 +154,16 @@ namespace API.Business.Users
                 id = new UserId();
                 Name = $"user{id.ToString()}";
                 User.users.AddLast(this);
+
+                _registeredUsers.Add(login, password);
+                _users.Add(int.Parse(Id), this);
             }
             else { throw new ArgumentException("Логин уже занят"); }
         }
 
-        public void SetPhoto(Image photo)
+        public void SetPhoto(int id, string photo)
         {
-            this.photo = photo;
+            _users[id].Photo = photo;
         }
 
         public void Like(int id)
@@ -158,9 +183,9 @@ namespace API.Business.Users
             reactions.Add(id);
         }
 
-        public void SetName(string name)
+        public void SetName(int id, string name)
         {
-            this.Name = name;
+            _users[id].Name = name;
         }
 
         //public Place GetRecomendation()
